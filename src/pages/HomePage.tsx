@@ -102,10 +102,10 @@ function Hero() {
   }
 
   return (
-    <section className="relative h-screen overflow-hidden" id="hero">
+    <section className="relative h-[100dvh] overflow-hidden" id="hero">
       <div ref={parallaxRef} className="absolute inset-0 z-0">
         <img
-          src = {imagem}
+          src={imagem}
           alt="Arquitetura moderna"
           className="w-full h-full object-cover center"
         />
@@ -143,15 +143,18 @@ function Hero() {
 function ProjectShowcase() {
   const navigate = useNavigate()
   const controls = useAnimation()
-  const [ref, inView] = useInView({ threshold: 0.2, triggerOnce: true })
+  const [ref] = useInView({ threshold: 0.2, triggerOnce: true })
   const [hoveredIndex, setHoveredIndex] = useState<number | null>(null)
   const [featuredProject, setFeaturedProject] = useState(projects[0])
 
+  // Limitando para 4 projetos no total
+  const displayedProjects = projects.slice(0, 3)
+  const allProjects = projects.slice(0, 3)
+
   useEffect(() => {
-    if (inView) {
-      controls.start("visible")
-    }
-  }, [controls, inView])
+    // Iniciar animação imediatamente para corrigir o bug de carregamento
+    controls.start("visible")
+  }, [controls])
 
   const handleProjectClick = (id: number) => {
     const dados = projects
@@ -168,8 +171,9 @@ function ProjectShowcase() {
 
   // Variantes de animação para o container
   const containerVariants = {
-    hidden: {},
+    hidden: { opacity: 0 },
     visible: {
+      opacity: 1,
       transition: {
         staggerChildren: 0.1,
       },
@@ -178,7 +182,7 @@ function ProjectShowcase() {
 
   // Variantes de animação para cada item
   const itemVariants = {
-    hidden: { y: 50, opacity: 0 },
+    hidden: { y: 20, opacity: 0 },
     visible: {
       y: 0,
       opacity: 1,
@@ -192,146 +196,320 @@ function ProjectShowcase() {
 
   // Variantes para o projeto em destaque
   const featuredVariants = {
-    hidden: { opacity: 0, scale: 0.95 },
+    hidden: { opacity: 0 },
     visible: {
       opacity: 1,
-      scale: 1,
       transition: {
-        duration: 0.8,
-        ease: "easeOut",
+        duration: 0.5,
       },
     },
   }
 
+  // Componente de projeto para telas pequenas (uma coluna)
+  const ProjectCardSmall = ({ project, index }: { project: any; index: number }) => (
+    <motion.div
+      key={project.id}
+      variants={itemVariants}
+      onHoverStart={() => handleProjectHover(index)}
+      onHoverEnd={() => setHoveredIndex(null)}
+  
+      className="relative aspect-[4/3] overflow-hidden rounded-lg cursor-pointer group"
+    >
+      <motion.div
+        className="absolute inset-0 bg-[#1a1a2e]/40 backdrop-blur-[2px] opacity-0 group-hover:opacity-100 transition-opacity duration-300"
+        initial={false}
+        animate={{ opacity: hoveredIndex === index ? 1 : 0 }}
+      />
+      <img
+        src={project.image || "/placeholder.svg"}
+        alt={project.title}
+        className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-110"
+      />
+      <div className="absolute inset-0 bg-gradient-to-t from-[#1a1a2e] to-transparent opacity-70" />
+      <div className="absolute bottom-0 left-0 right-0 p-6 transform translate-y-4 group-hover:translate-y-0 transition-transform duration-300">
+        <h3 className="text-xl font-medium mb-2">{project.title}</h3>
+        <p className="text-sm text-zinc-300 mb-2">{project.category}</p>
+        <p className="text-zinc-300 mb-4 text-sm">{project.description}</p>
+        <button
+          onClick={(e) => {
+            e.stopPropagation()
+            handleProjectClick(project.id)
+          }}
+          className="inline-flex items-center justify-center px-4 py-2 bg-white text-[#1a1a2e] text-sm uppercase tracking-wider hover:bg-zinc-200 transition-colors rounded-md"
+        >
+          Ver detalhes
+          <ChevronRight size={14} className="ml-1" />
+        </button>
+      </div>
+      <motion.div
+        className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 bg-white/20 backdrop-blur-sm rounded-full p-3"
+        initial={{ opacity: 0, scale: 0.8 }}
+        animate={{
+          opacity: hoveredIndex === index ? 1 : 0,
+          scale: hoveredIndex === index ? 1 : 0.8,
+        }}
+        transition={{ duration: 0.2 }}
+      >
+        <Plus size={24} className="text-white" />
+      </motion.div>
+    </motion.div>
+  )
+
   return (
-    <section id="destaques" className="py-24 bg-[#1a1a2e] text-white overflow-hidden">
-      <div className="max-w-7xl mx-auto px-6 md:px-8">
+    <section id="destaques" className="min-h-screen bg-[#1a1a2e] text-white overflow-hidden py-18">
+      <div className="max-w-[1700px] mx-auto px-4 md:px-6 flex flex-col h-full">
         <motion.div
           initial={{ opacity: 0, y: 20 }}
-          whileInView={{ opacity: 1, y: 0 }}
+          animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.8 }}
-          viewport={{ once: true }}
-          className="mb-16 text-center"
+          className="mb-8 text-center"
         >
           <h2 className="text-3xl md:text-4xl font-light mb-4">
-            Nossos <span className="font-medium">Projetos</span>
+            Projetos <span className="font-medium">Destaques</span>
           </h2>
-          <p className="text-zinc-400 max-w-2xl mx-auto">
-            Conheça alguns dos nossos trabalhos mais recentes e descubra como transformamos conceitos em realidade.
-          </p>
         </motion.div>
 
-        {/* Projeto em destaque */}
-        <motion.div variants={featuredVariants} initial="hidden" animate="visible" className="mb-16">
-          <div className="relative h-[500px] md:h-[600px] overflow-hidden rounded-lg">
-            <AnimatePresence mode="wait">
-              <motion.div
-                key={featuredProject.id}
-                initial={{ opacity: 0 }}
-                animate={{ opacity: 1 }}
-                exit={{ opacity: 0 }}
-                transition={{ duration: 0.5 }}
-                className="absolute inset-0"
-              >
-                <img
-                  src={featuredProject.image || "/placeholder.svg"}
-                  alt={featuredProject.title}
-                  className="w-full h-full object-cover"
-                />
-                <div className="absolute inset-0 bg-gradient-to-t from-[#1a1a2e] via-[#1a1a2e]/60 to-transparent"></div>
-
-                <div className="absolute bottom-0 left-0 right-0 p-8 md:p-12">
-                  <span className="inline-block px-3 py-1 text-xs uppercase tracking-wider bg-white/10 backdrop-blur-sm rounded-full mb-4">
-                    {featuredProject.category}
-                  </span>
-                  <h3 className="text-3xl md:text-4xl font-medium mb-4">{featuredProject.title}</h3>
-                  <p className="text-zinc-300 mb-6 max-w-2xl">{featuredProject.description}</p>
-                  <button
-                    onClick={() => handleProjectClick(featuredProject.id)}
-                    className="inline-flex items-center justify-center px-6 py-3 bg-white text-[#1a1a2e] text-sm uppercase tracking-wider hover:bg-zinc-200 transition-colors rounded-md"
-                  >
-                    Ver detalhes
-                    <ChevronRight size={16} className="ml-2" />
-                  </button>
-                </div>
-              </motion.div>
-            </AnimatePresence>
-          </div>
-        </motion.div>
-
-        {/* Grid de projetos */}
-        <motion.div
-          ref={ref}
-          variants={containerVariants}
-          initial="hidden"
-          animate={controls}
-          className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 md:gap-8"
-        >
-          {projects.map((project, index) => (
-            <motion.div
-              key={project.id}
-              variants={itemVariants}
-              onHoverStart={() => handleProjectHover(index)}
-              onHoverEnd={() => setHoveredIndex(null)}
-              onClick={() => handleFeaturedChange(project)}
-              className="relative aspect-[4/3] overflow-hidden rounded-lg cursor-pointer group"
-            >
-              <motion.div
-                className="absolute inset-0 bg-[#1a1a2e]/40 backdrop-blur-[2px] opacity-0 group-hover:opacity-100 transition-opacity duration-300"
-                initial={false}
-                animate={{ opacity: hoveredIndex === index ? 1 : 0 }}
-              />
-
-              <img
-                src={project.image || "/placeholder.svg"}
-                alt={project.title}
-                className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-110"
-              />
-
-              <div className="absolute inset-0 bg-gradient-to-t from-[#1a1a2e] to-transparent opacity-70" />
-
-              <div className="absolute bottom-0 left-0 right-0 p-6 transform translate-y-4 group-hover:translate-y-0 transition-transform duration-300">
-                <h3 className="text-xl font-medium mb-2">{project.title}</h3>
-                <p className="text-sm text-zinc-300 opacity-0 group-hover:opacity-100 transition-opacity duration-300">
-                  {project.category}
-                </p>
-              </div>
-
-              <motion.div
-                className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 bg-white/20 backdrop-blur-sm rounded-full p-3"
-                initial={{ opacity: 0, scale: 0.8 }}
-                animate={{
-                  opacity: hoveredIndex === index ? 1 : 0,
-                  scale: hoveredIndex === index ? 1 : 0.8,
-                }}
-                transition={{ duration: 0.2 }}
-              >
-                <Plus size={24} className="text-white" />
-              </motion.div>
-            </motion.div>
-          ))}
-        </motion.div>
-
-        <motion.div
-          initial={{ opacity: 0, y: 20 }}
-          whileInView={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.8, delay: 0.4 }}
-          viewport={{ once: true }}
-          className="mt-12 text-center"
-        >
-          <button
-            onClick={() => navigate("/projects")}
-            className="inline-flex items-center justify-center px-8 py-3 border border-white/30 text-white text-sm uppercase tracking-wider hover:bg-white/10 transition-colors rounded-md backdrop-blur-sm"
+        {/* Layout para telas muito pequenas (abaixo de sm) - Todos os projetos iguais em uma coluna */}
+        <div className="sm:hidden">
+          <motion.div
+            ref={ref}
+            variants={containerVariants}
+            initial="hidden"
+            animate="visible"
+            className="grid grid-cols-1 gap-6"
           >
-            Ver todos os projetos
-            <ChevronRight size={16} className="ml-2" />
-          </button>
-        </motion.div>
+            {allProjects.map((project, index) => (
+              <ProjectCardSmall key={project.id} project={project} index={index} />
+            ))}
+          </motion.div>
+
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.8, delay: 0.4 }}
+            className="mt-8 text-center"
+          >
+            <a
+              href="#projetos"
+              className="inline-flex items-center justify-center px-6 py-3 border border-white/30 text-white text-sm uppercase tracking-wider hover:bg-white/10 transition-colors rounded-md backdrop-blur-sm"
+            >
+              Ver todos os projetos
+              <ChevronRight size={16} className="ml-2" />
+            </a>
+          </motion.div>
+        </div>
+
+        {/* Layout para telas pequenas e médias (sm até lg) - Featured no topo, grid abaixo */}
+        <div className="hidden sm:block lg:hidden">
+          {/* Projeto em destaque */}
+          <motion.div variants={featuredVariants} initial="hidden" animate="visible" className="mb-8">
+            <div className="relative h-[400px] md:h-[500px] overflow-hidden rounded-lg">
+              <AnimatePresence mode="wait">
+                <motion.div
+                  key={featuredProject.id}
+                  initial={{ opacity: 0 }}
+                  animate={{ opacity: 1 }}
+                  exit={{ opacity: 0 }}
+                  transition={{ duration: 0.5 }}
+                  className="absolute inset-0"
+                >
+                  <img
+                    src={featuredProject.image || "/placeholder.svg"}
+                    alt={featuredProject.title}
+                    className="w-full h-full object-cover"
+                  />
+                  <div className="absolute inset-0 bg-gradient-to-t from-[#1a1a2e] via-[#1a1a2e]/60 to-transparent"></div>
+
+                  <div className="absolute bottom-0 left-0 right-0 p-6 md:p-8">
+                    <span className="inline-block px-3 py-1 text-xs uppercase tracking-wider bg-white/10 backdrop-blur-sm rounded-full mb-4">
+                      {featuredProject.category}
+                    </span>
+                    <h3 className="text-2xl md:text-3xl font-medium mb-3">{featuredProject.title}</h3>
+                    <p className="text-zinc-300 mb-5 max-w-2xl text-sm md:text-base">{featuredProject.description}</p>
+                    <button
+                      onClick={() => handleProjectClick(featuredProject.id)}
+                      className="inline-flex items-center justify-center px-5 py-2 bg-white text-[#1a1a2e] text-sm uppercase tracking-wider hover:bg-zinc-200 transition-colors rounded-md"
+                    >
+                      Ver detalhes
+                      <ChevronRight size={16} className="ml-2" />
+                    </button>
+                  </div>
+                </motion.div>
+              </AnimatePresence>
+            </div>
+          </motion.div>
+
+          {/* Grid de projetos */}
+          <motion.div
+            ref={ref}
+            variants={containerVariants}
+            initial="hidden"
+            animate="visible"
+            className="grid grid-cols-1 sm:grid-cols-3 gap-6 md:gap-8"
+          >
+            {displayedProjects.map((project, index) => (
+              <motion.div
+                key={project.id}
+                variants={itemVariants}
+                onHoverStart={() => handleProjectHover(index)}
+                onHoverEnd={() => setHoveredIndex(null)}
+                onClick={() => handleFeaturedChange(project)}
+                className="relative aspect-[4/3] overflow-hidden rounded-lg cursor-pointer group"
+              >
+                <motion.div
+                  className="absolute inset-0 bg-[#1a1a2e]/40 backdrop-blur-[2px] opacity-0 group-hover:opacity-100 transition-opacity duration-300"
+                  initial={false}
+                  animate={{ opacity: hoveredIndex === index ? 1 : 0 }}
+                />
+                <img
+                  src={project.image || "/placeholder.svg"}
+                  alt={project.title}
+                  className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-110"
+                />
+                <div className="absolute inset-0 bg-gradient-to-t from-[#1a1a2e] to-transparent opacity-70" />
+                <div className="absolute bottom-0 left-0 right-0 p-6 transform translate-y-4 group-hover:translate-y-0 transition-transform duration-300">
+                  <h3 className="text-xl font-medium mb-2">{project.title}</h3>
+                  <p className="text-sm text-zinc-300 opacity-0 group-hover:opacity-100 transition-opacity duration-300">
+                    {project.category}
+                  </p>
+                </div>
+                <motion.div
+                  className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 bg-white/20 backdrop-blur-sm rounded-full p-3"
+                  initial={{ opacity: 0, scale: 0.8 }}
+                  animate={{
+                    opacity: hoveredIndex === index ? 1 : 0,
+                    scale: hoveredIndex === index ? 1 : 0.8,
+                  }}
+                  transition={{ duration: 0.2 }}
+                >
+                  <Plus size={24} className="text-white" />
+                </motion.div>
+              </motion.div>
+            ))}
+          </motion.div>
+
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.8, delay: 0.4 }}
+            className="mt-8 text-center"
+          >
+            <a
+              href="#projetos"
+              className="inline-flex items-center justify-center px-6 py-3 border border-white/30 text-white text-sm uppercase tracking-wider hover:bg-white/10 transition-colors rounded-md backdrop-blur-sm"
+            >
+              Ver todos os projetos
+              <ChevronRight size={16} className="ml-2" />
+            </a>
+          </motion.div>
+        </div>
+
+        {/* Layout para telas grandes (lg e acima) - Thumbnails à esquerda, featured à direita */}
+        <div className="hidden lg:flex lg:flex-row gap-6 flex-grow">
+          {/* Grid de projetos - Lado esquerdo em telas grandes, uma coluna com 3 projetos */}
+          <div className="lg:w-1/5 flex flex-col">
+            <motion.div
+              ref={ref}
+              variants={containerVariants}
+              initial="hidden"
+              animate="visible"
+              className="flex flex-col space-y-4 h-full"
+            >
+              {displayedProjects.map((project, index) => (
+                <motion.div
+                  key={project.id}
+                  variants={itemVariants}
+                  onHoverStart={() => handleProjectHover(index)}
+                  onHoverEnd={() => setHoveredIndex(null)}
+                  onClick={() => handleFeaturedChange(project)}
+                  className={`relative aspect-[3/2] overflow-hidden rounded-lg cursor-pointer group 
+                    ${featuredProject.id === project.id ? "ring-2 ring-white" : "opacity-80 hover:opacity-100"}`}
+                >
+                  <motion.div
+                    className="absolute inset-0 bg-[#1a1a2e]/40 backdrop-blur-[2px] opacity-0 group-hover:opacity-100 transition-opacity duration-300"
+                    initial={false}
+                    animate={{ opacity: hoveredIndex === index ? 1 : 0 }}
+                  />
+                  <img
+                    src={project.image || "/placeholder.svg"}
+                    alt={project.title}
+                    className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-110"
+                  />
+
+                  <div className="absolute inset-0 bg-gradient-to-t from-[#1a1a2e] to-transparent opacity-70" />
+
+                  <div className="absolute bottom-0 left-0 right-0 p-3 transform translate-y-2 group-hover:translate-y-0 transition-transform duration-300">
+                    <h3 className="text-sm font-medium truncate">{project.title}</h3>
+                    <p className="text-xs text-zinc-300 opacity-0 group-hover:opacity-100 transition-opacity duration-300 truncate">
+                      {project.category}
+                    </p>
+                  </div>
+                </motion.div>
+              ))}
+            </motion.div>
+
+            <motion.div
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.8, delay: 0.4 }}
+              className="mt-6 text-center"
+            >
+              <a
+                href="#projetos"
+                className="inline-flex items-center justify-center px-4 py-2 border border-white/30 text-white text-xs uppercase tracking-wider hover:bg-white/10 transition-colors rounded-md backdrop-blur-sm w-full"
+              >
+                Ver todos
+                <ChevronRight size={14} className="ml-1" />
+              </a>
+            </motion.div>
+          </div>
+
+          {/* Projeto em destaque - Lado direito em telas grandes, ocupando mais espaço */}
+          <motion.div variants={featuredVariants} initial="hidden" animate="visible" className="lg:w-4/5">
+            <div className="relative h-[400px] md:h-[500px] lg:h-[calc(100vh-200px)] overflow-hidden rounded-lg">
+              <AnimatePresence mode="wait">
+                <motion.div
+                  key={featuredProject.id}
+                  initial={{ opacity: 0 }}
+                  animate={{ opacity: 1 }}
+                  exit={{ opacity: 0 }}
+                  transition={{ duration: 0.5 }}
+                  className="absolute inset-0"
+                >
+                  <img
+                    src={featuredProject.image || "/placeholder.svg"}
+                    alt={featuredProject.title}
+                    className="w-full h-full object-cover"
+                  />
+                  <div className="absolute inset-0 bg-gradient-to-t from-[#1a1a2e] via-[#1a1a2e]/60 to-transparent"></div>
+
+                  <div className="absolute bottom-0 left-0 right-0 p-6 md:p-10 lg:p-12">
+                    <span className="inline-block px-3 py-1 text-xs uppercase tracking-wider bg-white/10 backdrop-blur-sm rounded-full mb-4">
+                      {featuredProject.category}
+                    </span>
+                    <h3 className="text-2xl md:text-4xl lg:text-5xl font-medium mb-3 md:mb-4">
+                      {featuredProject.title}
+                    </h3>
+                    <p className="text-zinc-300 mb-5 md:mb-8 max-w-3xl text-sm md:text-base lg:text-lg">
+                      {featuredProject.description}
+                    </p>
+                    <button
+                      onClick={() => handleProjectClick(featuredProject.id)}
+                      className="inline-flex items-center justify-center px-5 py-2 md:px-6 md:py-3 bg-white text-[#1a1a2e] text-sm uppercase tracking-wider hover:bg-zinc-200 transition-colors rounded-md"
+                    >
+                      Ver detalhes
+                      <ChevronRight size={16} className="ml-2" />
+                    </button>
+                  </div>
+                </motion.div>
+              </AnimatePresence>
+            </div>
+          </motion.div>
+        </div>
       </div>
     </section>
   )
 }
-
 
 function AboutSection() {
   const fadeInUp = {
