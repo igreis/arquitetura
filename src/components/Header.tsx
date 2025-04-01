@@ -28,7 +28,7 @@ function Header() {
       )}
     >
       <div className="max-w-7xl mx-auto flex items-center justify-between">
-        <a href="/#hero" className={cn("text-2xl font-light tracking-tighter", isScrolled ? "text-black" : "text-white")}>
+        <a href="#hero" className={cn("text-2xl font-light tracking-tighter", isScrolled ? "text-black" : "text-white")}>
           ARCHI<span className={cn("font-medium", isScrolled ? "text-black" : "text-white")}>STUDIO</span>
         </a>
 
