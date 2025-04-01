@@ -8,7 +8,7 @@ import { ScrollToTop } from './components/ScrollToTop'
 
 function App() {
   return (
-    <Router>
+    <Router basename="/arquitetura">
       <ScrollToTop /> 
       <div className="min-h-screen bg-white">
         <Header />
