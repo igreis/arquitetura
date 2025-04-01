@@ -1,12 +1,12 @@
 import { useEffect, useRef, useState } from "react"
 import { motion, AnimatePresence, useAnimation } from "framer-motion"
-import { ChevronLeft, ChevronRight, Send, MapPin, Phone, Mail, ChevronDown, Plus } from 'lucide-react'
+import { ChevronRight, Send, MapPin, Phone, Mail, Plus } from 'lucide-react'
 import { useNavigate } from "react-router-dom"
 import Button from "../components/ButtonScroll"
 import { ProjectsSection } from '../sections/projects'
 import { useInView } from "react-intersection-observer"
 import imagem from "../assets/img/3d-rendering-modern-dining-room-living-room-with-luxury-decor.jpg"
-import ProjectShowcase2 from "../sections/ProjectShow2"
+//import ProjectShowcase2 from "../sections/ProjectShow2"
 
 
 const projects = [

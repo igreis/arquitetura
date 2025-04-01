@@ -153,7 +153,7 @@ export function ProjectsSection() {
           viewport={{ once: true }}
         >
 
-          <button onClick={handleClick}
+          <button
             className="border border-gray-300 px-8 py-3 text-sm font-medium uppercase tracking-wider transition-all hover:bg-black hover:text-white hover:border-black">
             Ver Todos os Projetos
           </button>

@@ -21,7 +21,7 @@ function ProjectDetailPage() {
   useEffect(() => {
     // Simulando uma busca no banco de dados
     const projectId = Number.parseInt(id || "0")
-    const foundProject = projects.find((p) => p.id === projectId)
+    const foundProject = projects.find((p: { id: Number } ) => p.id === projectId)
 
     // Simulando um tempo de carregamento
     setTimeout(() => {
